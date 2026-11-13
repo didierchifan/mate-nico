@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF8EC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Matematică până la 20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF8EC; --card:#FFFFFF; --ink:#2B2A4C; --muted:#7A7896;
+    --a:#FF7A59; --b:#3FA7F5; --ok:#2DBE7E; --bad:#F2545B; --warn:#FFC23C;
+    --line:#EDE4D3; --soft:#FFF1D6;
+  }
+  /* Totul e în rem, iar rem-ul crește odată cu ecranul */
+  html{font-size:clamp(13px, min(1.85vh, 4.1vw), 34px)}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Fredoka",system-ui,sans-serif}
+  body{min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;padding:1rem}
+  .app{width:100%;max-width:35rem;margin:auto}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+  header h1{font-size:1.4rem;margin:0;font-weight:700;display:flex;gap:.5rem;align-items:center}
+  .iconbtn{border:0;background:var(--card);border-radius:.9rem;width:2.75rem;height:2.75rem;font-size:1.25rem;cursor:pointer;box-shadow:0 .15rem 0 var(--line)}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border-radius:1.5rem;padding:1.25rem;box-shadow:0 .25rem 0 var(--line);margin-bottom:1rem}
+  h2{font-size:1.15rem;margin:0 0 .75rem;font-weight:600;color:var(--muted)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem}
+  .opt{border:.2rem solid var(--line);background:#fff;border-radius:1.1rem;padding:.9rem .5rem;cursor:pointer;font:inherit;color:var(--ink);text-align:center;transition:transform .1s}
+  .opt:active{transform:scale(.97)}
+  .opt .big{font-size:2.2rem;font-weight:700;line-height:1}
+  .opt .lbl{font-size:1rem;margin-top:.4rem}
+  .opt .sub{font-size:.85rem;color:var(--muted);margin-top:.15rem}
+  .opt.sel{border-color:var(--b);background:#EEF7FF}
+  .start{width:100%;border:0;border-radius:1.25rem;padding:1.1rem;font:inherit;font-size:1.5rem;font-weight:700;background:var(--ok);color:#fff;cursor:pointer;box-shadow:0 .3rem 0 #1f9862}
+  .start:active{transform:translateY(3px);box-shadow:0 2px 0 #1f9862}
+
+  .progress{display:flex;gap:.4rem;justify-content:center;margin-bottom:.9rem;flex-wrap:wrap}
+  .dot{width:1.4rem;height:1.4rem;border-radius:50%;background:#fff;border:.2rem solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.75rem}
+  .dot.cur{border-color:var(--b);transform:scale(1.15)}
+  .dot.ok{background:var(--ok);border-color:var(--ok)}
+  .dot.mid{background:var(--warn);border-color:var(--warn)}
+  .dot.no{background:var(--bad);border-color:var(--bad)}
+
+  .eq{display:flex;align-items:center;justify-content:center;gap:.6rem;font-size:4.2rem;font-weight:700;padding:.9rem 0 .4rem;flex-wrap:nowrap;line-height:1}
+  .eq .op{color:var(--muted)}
+  .eq .na{color:var(--a)} .eq .nb{color:var(--b)}
+  .box{min-width:1.6em;height:1.6em;padding:0 .15em;border:.25rem dashed var(--b);border-radius:.3em;display:flex;align-items:center;justify-content:center;background:#F3F9FF;color:var(--ink);transition:all .2s}
+  .box.empty::after{content:"?";color:#B8D9F6}
+  .box.ok{border:.25rem solid var(--ok);background:#E6F8EF;color:var(--ok)}
+  .box.bad{border:.25rem solid var(--bad);background:#FDECEC;color:var(--bad);animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .feedback{text-align:center;min-height:2rem;font-size:1.4rem;font-weight:600}
+  .feedback.ok{color:var(--ok)} .feedback.bad{color:var(--bad)} .feedback.info{color:var(--muted)}
+
+  .hint{display:none;margin-top:.6rem;background:var(--soft);border-radius:1.1rem;padding:.9rem}
+  .hint.show{display:block;animation:fade .3s}
+  .hint b{white-space:nowrap}
+  .hint p{margin:0 0 .6rem;font-size:1.15rem;line-height:1.35;text-align:center}
+  .frames{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+  .frame{--c:min(1.85rem,5.3vw);display:grid;grid-template-columns:repeat(5,var(--c));grid-template-rows:repeat(2,var(--c));gap:.25rem;padding:.4rem;background:#fff;border-radius:.6rem;border:.12rem solid var(--line)}
+  .cell{border-radius:50%;background:#F4EFE6;position:relative}
+  .cell.ca{background:var(--a)} .cell.cb{background:var(--b)} .cell.cn{background:#B9B4CF}
+  .cell.x{background:#F8C9C2}
+  .cell.x::after{content:"✕";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--bad);font-weight:700;font-size:1.1rem}
+
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}
+  .key{border:0;border-radius:1.1rem;background:#fff;font:inherit;font-size:2rem;font-weight:600;color:var(--ink);padding:.85rem 0;cursor:pointer;box-shadow:0 .25rem 0 var(--line);user-select:none}
+  .key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+  .key.del{font-size:1.65rem;color:var(--muted)}
+  .key.go{background:var(--ok);color:#fff;box-shadow:0 .25rem 0 #1f9862;font-size:1.2rem;white-space:nowrap}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.65rem}
+  .soft{border:0;border-radius:1rem;background:var(--soft);font:inherit;font-size:1.05rem;padding:.75rem;cursor:pointer;color:var(--ink)}
+  .soft:disabled{opacity:.4}
+
+  .result{text-align:center}
+  .stars{font-size:3.5rem;letter-spacing:.4rem;margin:.4rem 0}
+  .score{font-size:1.5rem;font-weight:600}
+  .mist{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:.75rem}
+  .chip{background:var(--soft);border-radius:.75rem;padding:.4rem .75rem;font-size:1.15rem}
+  .btncol{display:grid;gap:.65rem;margin-top:1rem}
+  .pop{position:fixed;pointer-events:none;font-size:2.2rem;animation:pop 1s ease-out forwards;z-index:9}
+  @keyframes pop{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.3)}}
+  /* ---------- mobil ---------- */
+  html,body{overscroll-behavior:none}
+  body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+       padding:max(.75rem,env(safe-area-inset-top)) max(.75rem,env(safe-area-inset-right)) max(.75rem,env(safe-area-inset-bottom)) max(.75rem,env(safe-area-inset-left))}
+  button{touch-action:manipulation}
+  @media (max-aspect-ratio: 5/4){
+    body{align-items:stretch}
+    .app{display:flex;flex-direction:column;min-height:calc(100dvh - 1.5rem)}
+    header{margin-bottom:.6rem}
+    .card{padding:1rem;margin-bottom:.75rem}
+    h2{margin-bottom:.55rem}
+    #sStart.active,#sEnd.active{margin:auto 0}
+    .hello{margin-bottom:.75rem;padding:.8rem 1rem}
+    .opt{padding:.7rem .4rem}
+    .opt .big{font-size:1.9rem}
+    .start{padding:1rem}
+    /* jocul ocupă exact un ecran: exercițiul sus, tastatura jos la îndemâna degetului */
+    body:has(#sGame.active) .app{height:calc(100dvh - 1.5rem);min-height:0}
+    #sGame.active{flex:1;min-height:0;display:flex;flex-direction:column}
+    #sGame .topbar{margin-bottom:.6rem}
+    #sGame .card{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;overflow:auto;margin-bottom:.65rem}
+    #sGame .eq{font-size:min(4.4rem, 17vw)}
+    #sGame .card.hinting{justify-content:flex-start}
+    #sGame .card.hinting .eq{font-size:min(3rem,12vw);padding:.2rem 0}
+    #sGame .card.hinting .feedback{font-size:1.15rem;min-height:1.5rem}
+    #sGame .hint{padding:.7rem}
+    #sGame .hint p{font-size:1.02rem;margin-bottom:.45rem}
+    .frame{--c:min(1.6rem,5.3vw)}
+    .hello{gap:.7rem}
+    .hello .owl{font-size:2.6rem}
+    .hello .hi{font-size:min(1.6rem,6.4vw)}
+    .hello .hisub{font-size:.95rem}
+    .hello .iconbtn{width:2.4rem;height:2.4rem;font-size:1.05rem}
+    .key{padding:.95rem 0}
+  }
+  @media (max-aspect-ratio: 5/4) and (max-height: 700px){
+    .key{padding:.7rem 0}
+    #sGame .card.hinting .eq{font-size:min(2.5rem,11vw)}
+  }
+  /* telefon ținut orizontal */
+  @media (min-aspect-ratio: 5/4) and (max-height: 500px){
+    html{font-size:max(10px, 2.6vh)}
+    header{margin-bottom:.3rem}
+    #sGame .card{min-height:0}
+    #sGame .eq{font-size:4rem}
+    body{align-items:flex-start;padding-top:max(.4rem,env(safe-area-inset-top));padding-bottom:max(.4rem,env(safe-area-inset-bottom))}
+    #sGame .topbar{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:.5rem}
+    #sGame .timer{margin:0}
+    .key{padding:.45rem 0}
+  }
+  /* salut */
+  .hello{display:flex;align-items:center;gap:1rem;background:linear-gradient(120deg,#FFE3D6,#DDF0FF);border-radius:1.5rem;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 .25rem 0 var(--line)}
+  .hello .owl{font-size:3.2rem;line-height:1;animation:wave 2.4s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes wave{0%,100%{transform:rotate(0)}15%{transform:rotate(-12deg)}30%{transform:rotate(10deg)}45%{transform:rotate(0)}}
+  .hello .hi{font-size:1.9rem;font-weight:700;line-height:1.1}
+  body:has(#sStart.active) header{display:none}
+  .hello .brand{font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .hello .iconbtn{align-self:flex-start;flex:none}
+  #times{grid-template-columns:1.5fr 1fr 1fr 1fr}
+  #times .opt .lbl{white-space:nowrap}
+  .hello .hisub{font-size:1.05rem;color:var(--muted);margin-top:.2rem}
+  /* timer */
+  .topbar{margin-bottom:.9rem}
+  .topbar .progress{margin-bottom:0}
+  .timer{display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:.6rem}
+  .tpill{background:#fff;border-radius:999px;padding:.3rem .9rem;font-size:1.35rem;font-weight:700;box-shadow:0 .15rem 0 var(--line);font-variant-numeric:tabular-nums;min-width:5.5rem;text-align:center}
+  .tbar{flex:1;max-width:18rem;height:.7rem;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 .12rem var(--line);overflow:hidden}
+  .tbar i{display:block;height:100%;width:100%;background:var(--ok);border-radius:999px;transition:width .25s linear, background .3s}
+  .timer.warn .tbar i{background:var(--warn)}
+  .timer.danger .tbar i{background:var(--bad)}
+  .timer.danger .tpill{color:var(--bad);animation:pulse 1s infinite}
+  @keyframes pulse{50%{transform:scale(1.08)}}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem}
+  #times .opt{padding:.6rem .4rem}
+  #times .opt .lbl{margin:0;font-size:1.05rem}
+  .timeinfo{font-size:1.25rem;margin-top:.5rem}
+  .record{display:inline-block;background:#FFF4CC;border-radius:.75rem;padding:.25rem .7rem;margin-top:.4rem;font-size:1.05rem}
+  .tip{font-size:.95rem;color:var(--muted);text-align:center;margin-top:.5rem}
+
+  /* Ecran lat (laptop, tabletă pe orizontală): exercițiul în stânga, tastatura în dreapta */
+  @media (min-aspect-ratio: 5/4){
+    html{font-size:clamp(13px, min(2.75vh, 1.55vw), 36px)}
+    .app{max-width:min(72rem, 100%)}
+    body:has(#sStart.active) .app, body:has(#sEnd.active) .app{max-width:40rem}
+    #sGame.active{display:grid;grid-template-columns:1.35fr 1fr;grid-template-areas:"prog prog" "card pad" "card row";grid-template-rows:auto 1fr auto;column-gap:1.5rem}
+    #sGame .topbar{grid-area:prog}
+    #sGame .card{grid-area:card;margin:0;display:flex;flex-direction:column;justify-content:center;min-height:22rem}
+    #sGame .pad{grid-area:pad;align-content:stretch}
+    #sGame .row2{grid-area:row}
+    #sGame .eq{font-size:5.6rem}
+    #sGame .key{font-size:2.2rem}
+    #sGame .key.go{font-size:1.45rem}
+    #sGame .key.del{font-size:1.8rem}
+    .frame{--c:1.85rem}
+    body:has(#sStart.active) .app{max-width:62rem}
+    #sStart.active{display:grid;grid-template-columns:1fr 1.7fr;column-gap:1rem}
+    #sStart #ops{grid-template-columns:1fr}
+    #sStart #ops .opt{display:flex;align-items:center;gap:1rem;padding:.7rem 1.2rem;text-align:left}
+    #sStart #ops .opt .lbl{margin:0;font-size:1.15rem}
+    #sStart #ops .opt .big{width:2rem;text-align:center}
+    #sStart #levels .opt{padding:.8rem .5rem}
+    #sStart .timecard{grid-column:1/-1;display:flex;align-items:center;gap:1.2rem;padding:.8rem 1.25rem}
+    #sStart .timecard h2{margin:0;white-space:nowrap}
+    #sStart .timecard .grid4{flex:1}
+    #sStart .start,#sStart .tip,#sStart .hello{grid-column:1/-1}
+    #sStart .hello{padding:.7rem 1.25rem}
+    #sStart .tip{display:none}
+    #sStart #ops .opt{padding:.55rem 1.2rem}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🦉 Mate până la 20</h1>
+    <div>
+      <button class="iconbtn" id="soundBtn" title="Sunet">🔊</button>
+      <button class="iconbtn" id="homeBtn" title="Acasă" style="display:none">🏠</button>
+    </div>
+  </header>
+
+  <!-- START -->
+  <section class="screen active" id="sStart">
+    <div class="hello">
+      <div class="owl">🦉</div>
+      <div style="flex:1">
+        <div class="brand">Mate până la 20</div>
+        <div class="hi" id="hi">Salut, Nico! 👋</div>
+        <div class="hisub" id="hisub">Hai să ne jucăm cu numerele!</div>
+      </div>
+      <button class="iconbtn sndb" title="Sunet">🔊</button>
+    </div>
+    <div class="card">
+      <h2>Ce exersăm azi?</h2>
+      <div class="grid3" id="ops">
+        <button class="opt sel" data-op="add"><div class="big">+</div><div class="lbl">Adunări</div></button>
+        <button class="opt" data-op="sub"><div class="big">−</div><div class="lbl">Scăderi</div></button>
+        <button class="opt" data-op="mix"><div class="big">±</div><div class="lbl">Amestecat</div></button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Alege nivelul</h2>
+      <div class="grid2" id="levels">
+        <button class="opt sel" data-lv="1"><div class="lbl">⭐ Nivelul 1</div><div class="sub">până la 10</div></button>
+        <button class="opt" data-lv="2"><div class="lbl">⭐⭐ Nivelul 2</div><div class="sub">până la 20, fără trecere peste 10</div></button>
+        <button class="opt" data-lv="3"><div class="lbl">⭐⭐⭐ Nivelul 3</div><div class="sub">cu trecere peste 10</div></button>
+        <button class="opt" data-lv="4"><div class="lbl">🧩 Provocare</div><div class="sub">găsește numărul lipsă</div></button>
+      </div>
+    </div>
+    <div class="card timecard">
+      <h2>⏱️ Timp pe rundă</h2>
+      <div class="grid4" id="times">
+        <button class="opt sel" data-t="0"><div class="lbl">Cronometru</div></button>
+        <button class="opt" data-t="180"><div class="lbl">3 min</div></button>
+        <button class="opt" data-t="120"><div class="lbl">2 min</div></button>
+        <button class="opt" data-t="60"><div class="lbl">1 min</div></button>
+      </div>
+    </div>
+    <button class="start" id="startBtn">Începe! 🚀</button>
+    <p class="tip">10 exerciții pe rundă · cele greșite revin la final</p>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="sGame">
+    <div class="topbar">
+      <div class="timer" id="timer"><span class="tpill" id="tval">0:00</span><div class="tbar" id="tbar"><i id="tfill"></i></div></div>
+      <div class="progress" id="progress"></div>
+    </div>
+    <div class="card">
+      <div class="eq" id="eq"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+    <div class="pad" id="pad"></div>
+    <div class="row2">
+      <button class="soft" id="hintBtn">💡 Ajutor</button>
+      <button class="soft" id="skipBtn">⏭️ Sari peste</button>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="sEnd">
+    <div class="card result">
+      <div style="font-size:3rem">🦉</div>
+      <div class="stars" id="stars"></div>
+      <div class="score" id="score"></div>
+      <div class="timeinfo" id="timeinfo"></div>
+      <p id="endMsg" style="font-size:1.1rem;color:var(--muted);margin:.5rem 0 0"></p>
+      <div class="mist" id="mist"></div>
+      <div class="btncol">
+        <button class="start" id="againBtn">Încă o rundă 🔁</button>
+        <button class="soft" id="practiceBtn">🎯 Exersează doar greșelile</button>
+        <button class="soft" id="nextLvBtn">⬆️ Treci la nivelul următor</button>
+        <button class="soft" id="menuBtn">🏠 Alege alt nivel</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const ROUND = 10;
+  const NAME = "Nico";
+  const PRAISE = [`Bravo, ${NAME}! 🎉`,`Super, ${NAME}! ⭐`,`Excelent, ${NAME}! 🌟`,`Perfect, ${NAME}! 👏`,`Așa da, ${NAME}! 💪`,`Foarte bine, ${NAME}! 😄`,`${NAME}, ești de nota 10! 🚀`];
+  const TRY = [`Mai încearcă, ${NAME}! 🙂`,`Aproape, ${NAME}! Încă o dată.`,`Hai, ${NAME}, că poți! 💪`,`Gândește-te puțin, ${NAME} 🤔`];
+  const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  let st = { op:"add", lv:1, sound:true, time:0 };
+  let tick = null;
+  let game = null;
+
+  // ---------- sound ----------
+  let actx = null;
+  function beep(freqs, dur=0.12){
+    if(!st.sound) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      freqs.forEach((f,i)=>{
+        const o = actx.createOscillator(), g = actx.createGain();
+        o.type="sine"; o.frequency.value=f;
+        const t = actx.currentTime + i*dur;
+        g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.18,t+.02);
+        g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+        o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+.02);
+      });
+    }catch(e){}
+  }
+  const buzz = ms => { try{ if(st.sound && navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+  const sOk = () => { beep([660,880,1100],.1); buzz(40); };
+  const sBad = () => { beep([300,220],.14); buzz([60,40,60]); };
+  const sTap = () => beep([520],.05);
+
+  // ---------- generation ----------
+  function gen(op, lv){
+    if(op==="mix") op = Math.random()<.5 ? "add":"sub";
+    let a,b;
+    if(lv===4) lv = pick([1,2,3,3]);
+    if(op==="add"){
+      if(lv===1){ do{ a=rnd(1,9); b=rnd(1,9);}while(a+b>10); }
+      else if(lv===2){
+        if(Math.random()<.75){ a=rnd(10,18); b=rnd(1, 9-(a%10)); if(b<1){a=11;b=rnd(1,8);} }
+        else { a=rnd(1,9); b=10; if(Math.random()<.5)[a,b]=[b,a]; }
+        if(Math.random()<.3 && a<10===false && b<10)[a,b]=[b,a];
+      }
+      else { do{ a=rnd(2,9); b=rnd(2,9);}while(a+b<=10); }
+      return {op:"add",a,b,r:a+b,lv};
+    } else {
+      if(lv===1){ a=rnd(2,10); b=rnd(1,a-1); }
+      else if(lv===2){
+        if(Math.random()<.8){ a=rnd(11,19); b=rnd(1,a%10); }
+        else { a=rnd(11,20); b=a===20?10:(Math.random()<.5?10:a-10); }
+      }
+      else { do{ a=rnd(11,18); b=rnd(2,9);}while(b<=a%10); }
+      return {op:"sub",a,b,r:a-b,lv};
+    }
+  }
+  const key = p => `${p.a}${p.op}${p.b}${p.hide||""}`;
+
+  function makeRound(op, lv){
+    const list=[], used=new Set();
+    let guard=0;
+    while(list.length<ROUND && guard++<500){
+      const p = gen(op,lv);
+      if(lv===4) p.hide = pick(["a","b","b","a"]); else p.hide="r";
+      const k=key(p);
+      if(used.has(k)) continue;
+      used.add(k); list.push(p);
+    }
+    return list;
+  }
+
+  // ---------- screens ----------
+  function show(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    $(id).classList.add("active");
+    $("#homeBtn").style.display = id==="#sStart" ? "none" : "inline-block";
+  }
+
+  function startGame(list){
+    stopTimer();
+    game = { list, i:0, input:"", tries:0, results:[], requeued:new Set(), firstLen:list.length, busy:false, hintShown:false,
+             elapsed:0, last:performance.now(), limit:st.time, over:false, practice:!!arguments[1] };
+    show("#sGame");
+    $("#tbar").style.display = game.limit ? "block" : "none";
+    renderTimer();
+    tick = setInterval(updateTimer, 200);
+    renderProgress(); renderQ();
+  }
+
+  function cur(){ return game.list[game.i]; }
+  function answerOf(p){ return p[p.hide]; }
+
+  function renderProgress(){
+    const el=$("#progress"); el.innerHTML="";
+    for(let k=0;k<game.list.length;k++){
+      const d=document.createElement("div"); d.className="dot";
+      const res=game.results[k];
+      if(res) d.classList.add(res); else if(k===game.i) d.classList.add("cur");
+      if(k>=game.firstLen) d.textContent="↻";
+      el.appendChild(d);
+    }
+  }
+
+  function renderQ(){
+    const p=cur();
+    game.input=""; game.tries=0; game.busy=false; game.hintShown=false;
+    $("#fb").textContent=""; $("#fb").className="feedback";
+    $("#hint").className="hint"; $("#hint").innerHTML=""; $("#sGame .card").classList.remove("hinting");
+    $("#hintBtn").disabled=false;
+    const sym = p.op==="add" ? "+" : "−";
+    const part = (name, cls) => p.hide===name
+      ? `<div class="box empty" id="box"></div>`
+      : `<span class="${cls}">${p[name]}</span>`;
+    $("#eq").innerHTML = `${part("a","na")}<span class="op">${sym}</span>${part("b","nb")}<span class="op">=</span>${part("r","")}`;
+  }
+
+  function updateBox(){
+    const box=$("#box"); if(!box) return;
+    box.className="box"+(game.input===""?" empty":"");
+    box.textContent=game.input;
+  }
+
+  function press(d){
+    if(!game || game.busy) return;
+    sTap();
+    if(game.input.length>=2) return;
+    if(game.input==="0") game.input="";
+    game.input+=d; updateBox();
+    $("#fb").textContent="";
+  }
+  function del(){ if(!game||game.busy) return; game.input=game.input.slice(0,-1); updateBox(); }
+
+  function check(){
+    if(!game || game.busy) return;
+    if(game.input===""){ $("#fb").textContent=`${NAME}, scrie un număr pe tastatură 👇`; $("#fb").className="feedback info"; return; }
+    const p=cur(), val=parseInt(game.input,10), box=$("#box");
+    if(val===answerOf(p)){
+      game.busy=true;
+      box.className="box ok";
+      $("#fb").textContent=pick(PRAISE); $("#fb").className="feedback ok";
+      sOk(); confetti(box);
+      game.results[game.i] = game.tries===0 ? "ok" : "mid";
+      if(game.tries>0) game.hard = (game.hard||[]).concat([p]);
+      setTimeout(next, game.tries===0 ? 900 : 1300);
+    } else {
+      game.tries++;
+      box.className="box bad"; sBad();
+      if(game.tries>=3){
+        game.busy=true;
+        box.className="box ok"; box.textContent=answerOf(p);
+        $("#fb").innerHTML=`Răspunsul este <b>${answerOf(p)}</b>. Nu-i nimic, ${NAME}, îl mai facem o dată la final!`;
+        $("#fb").className="feedback info";
+        showHint();
+        game.results[game.i]="no";
+        game.hard=(game.hard||[]).concat([p]);
+        requeue(p);
+        setTimeout(next, 3200);
+        return;
+      }
+      $("#fb").textContent = game.tries===1 ? pick(TRY) : `Uite un ajutor, ${NAME} 👇`;
+      $("#fb").className="feedback bad";
+      if(game.tries===2) showHint();
+      setTimeout(()=>{ if(!game.busy){ game.input=""; updateBox(); } },650);
+    }
+  }
+
+  function requeue(p){
+    const k=key(p);
+    if(game.requeued.has(k) || game.i>=game.firstLen) return;
+    game.requeued.add(k);
+    game.list.push({...p});
+  }
+
+  function skip(){
+    if(!game||game.busy) return;
+    const p=cur();
+    game.results[game.i]="no";
+    game.hard=(game.hard||[]).concat([p]);
+    requeue(p);
+    next();
+  }
+
+  // ---------- timer ----------
+  const fmt = sec => { sec=Math.max(0,Math.ceil(sec)); return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0"); };
+  function stopTimer(){ if(tick){ clearInterval(tick); tick=null; } }
+  function updateTimer(){
+    if(!game || game.over) return stopTimer();
+    const now=performance.now();
+    if(!document.hidden) game.elapsed += (now-game.last)/1000;   // pauză automată când tab-ul nu e vizibil
+    game.last=now;
+    renderTimer();
+    if(game.limit && game.elapsed>=game.limit) finish(true);
+  }
+  function renderTimer(){
+    const t=$("#timer");
+    if(!game.limit){ $("#tval").textContent="⏱️ "+fmt(Math.floor(game.elapsed)); t.className="timer"; return; }
+    const left=game.limit-game.elapsed, frac=Math.max(0,left/game.limit);
+    $("#tval").textContent="⏳ "+fmt(left);
+    $("#tfill").style.width=(frac*100)+"%";
+    t.className="timer"+(left<=10?" danger":frac<=.35?" warn":"");
+  }
+  document.addEventListener("visibilitychange",()=>{ if(game) game.last=performance.now(); });
+
+  function next(){
+    if(!game || game.over) return;
+    game.i++;
+    if(game.i>=game.list.length) return finish();
+    renderProgress(); renderQ();
+  }
+
+  // ---------- hints ----------
+  function frames(n, opts){ // opts: colorA count, colorB count, crossed count from end
+    const total=Math.max(n, 1), nFrames = total>10 ? 2 : 1;
+    let html='<div class="frames">';
+    for(let f=0;f<nFrames;f++){
+      html+='<div class="frame">';
+      for(let c=0;c<10;c++){
+        const idx=f*10+c; let cls="cell";
+        if(idx<n){
+          if(opts.mode==="add") cls+= idx<opts.a ? " ca" : " cb";
+          else if(opts.mode==="sub") cls+= idx>=n-opts.x ? " x" : " ca";
+          else cls+=" cn";
+        }
+        html+=`<div class="${cls}"></div>`;
+      }
+      html+='</div>';
+    }
+    return html+'</div>';
+  }
+
+  function hintFor(a,op,b){
+    const r = op==="add" ? a+b : a-b;
+    let txt="";
+    if(op==="add"){
+      if(a<10 && a+b>10){
+        const fill=10-a, rest=b-fill;
+        txt=`Completează până la 10: <b>${a} + ${fill} = 10</b>.<br>Din ${b} mai rămân <b>${rest}</b>, deci <b>10 + ${rest}</b>.`;
+      } else if(a>=10 || b>=10){
+        const big=Math.max(a,b), small=Math.min(a,b);
+        txt = big===10
+          ? `Când aduni <b>10</b>, pui 10 în față: <b>10 + ${small}</b>.`
+          : `${big} înseamnă <b>10 și ${big-10}</b>. Adună doar unitățile: <b>${big-10} + ${small}</b>, apoi pune 10 în față.`;
+      } else {
+        txt=`Pornește de la <b>${a}</b> și numără încă <b>${b}</b> buline albastre.`;
+      }
+      return `<p>${txt}</p>${frames(r,{mode:"add",a})}`;
+    } else {
+      if(a>10 && b>a-10){
+        const s1=a-10, rest=b-s1;
+        txt=`Scade întâi <b>${s1}</b> ca să ajungi la 10: <b>${a} − ${s1} = 10</b>.<br>Mai ai de scăzut <b>${rest}</b>, deci <b>10 − ${rest}</b>.`;
+      } else if(a>10 && b<=a-10 && b!==10){
+        txt=`${a} înseamnă <b>10 și ${a-10}</b>. Scade doar din unități: <b>${a-10} − ${b}</b>, apoi pune 10 în față.`;
+      } else {
+        txt=`Ai <b>${a}</b> buline. Taie <b>${b}</b> și numără câte rămân.`;
+      }
+      return `<p>${txt}</p>${frames(a,{mode:"sub",x:b})}`;
+    }
+  }
+
+  function showHint(){
+    if(!game) return;
+    const p=cur(), h=$("#hint");
+    let html="";
+    if(p.hide==="r") html=hintFor(p.a,p.op,p.b);
+    else {
+      // missing number: turn it around
+      let eqv;
+      if(p.op==="add") eqv = p.hide==="a" ? [p.r,"sub",p.b] : [p.r,"sub",p.a];
+      else eqv = p.hide==="a" ? [p.r,"add",p.b] : [p.a,"sub",p.r];
+      const s=eqv[1]==="add"?"+":"−";
+      html=`<p>🔄 Gândește invers: <b>${eqv[0]} ${s} ${eqv[2]} = ?</b></p>`+hintFor(eqv[0],eqv[1],eqv[2]);
+    }
+    h.innerHTML=html; h.className="hint show"; $("#sGame .card").classList.add("hinting");
+    game.hintShown=true; $("#hintBtn").disabled=true;
+  }
+
+  // ---------- end ----------
+  function finish(timeUp){
+    if(game.over) return;
+    game.over=true; game.busy=true; stopTimer();
+    const first=game.results.slice(0,game.firstLen);
+    const ok=first.filter(r=>r==="ok").length;
+    const stars = ok>=9?3: ok>=7?2: ok>=4?1:0;
+    $("#stars").textContent = "⭐".repeat(stars)+"☆".repeat(3-stars);
+    $("#score").textContent = `${ok} din ${game.firstLen} din prima încercare`;
+    // timp + record
+    const done = !timeUp, secs=Math.round(game.elapsed);
+    let tinfo = timeUp ? `⏰ Timpul a expirat, ${NAME}! Ai rezolvat ${first.filter(Boolean).length} din ${game.firstLen}.`
+                       : `⏱️ Timp: <b>${fmt(secs)}</b>` + (game.limit ? ` din ${fmt(game.limit)}` : "");
+    if(done && !game.practice){
+      const k=`mate20_best_${st.op}_${st.lv}`;
+      let best=null; try{ best=parseInt(localStorage.getItem(k)); }catch(e){}
+      if(!best || secs<best){
+        if(best) tinfo+=`<br><span class="record">🏆 Record nou, ${NAME}! (înainte: ${fmt(best)})</span>`;
+        try{ localStorage.setItem(k, secs); }catch(e){}
+      } else tinfo+=`<br><span class="record">🏆 Recordul lui ${NAME}: ${fmt(best)}</span>`;
+    }
+    $("#timeinfo").innerHTML=tinfo;
+    $("#endMsg").textContent = timeUp ? `Data viitoare, ${NAME}, încearcă cu mai mult timp sau în modul Cronometru.` : stars===3 ? `${NAME}, ești campion la socoteli! 🏆`
+      : stars===2 ? `Foarte bine, ${NAME}! Încă puțin și iei 3 stele.`
+      : `Fiecare exercițiu te face mai puternic, ${NAME}. Mai încercăm o dată?`;
+    const uniq=[]; const seen=new Set();
+    (game.hard||[]).forEach(p=>{const k=key(p); if(!seen.has(k)){seen.add(k); uniq.push(p);}});
+    game.uniqHard=uniq;
+    $("#mist").innerHTML = uniq.length ? `<div style="width:100%;color:var(--muted);font-size:15px">De repetat:</div>`+
+      uniq.map(p=>`<span class="chip">${p.a} ${p.op==="add"?"+":"−"} ${p.b} = ${p.r}</span>`).join("") : "";
+    $("#practiceBtn").style.display = uniq.length ? "block":"none";
+    $("#nextLvBtn").style.display = (stars===3 && st.lv<4) ? "block":"none";
+    show("#sEnd");
+    if(stars===3){ sOk(); for(let i=0;i<3;i++) setTimeout(()=>confetti($("#stars")),i*250); }
+  }
+
+  function confetti(el){
+    const r=el.getBoundingClientRect();
+    const em=["⭐","🎉","✨","🌟","🎈"];
+    for(let i=0;i<8;i++){
+      const s=document.createElement("div"); s.className="pop"; s.textContent=pick(em);
+      s.style.left=(r.left+r.width/2-16)+"px"; s.style.top=(r.top+r.height/2-16)+"px";
+      s.style.setProperty("--dx",(Math.random()*240-120)+"px");
+      s.style.setProperty("--dy",(Math.random()*-180-30)+"px");
+      document.body.appendChild(s); setTimeout(()=>s.remove(),1000);
+    }
+  }
+
+  // ---------- wiring ----------
+  const pad=$("#pad");
+  ["1","2","3","4","5","6","7","8","9","del","0","go"].forEach(k=>{
+    const b=document.createElement("button"); b.className="key";
+    if(k==="del"){ b.classList.add("del"); b.textContent="⌫"; b.onclick=del; }
+    else if(k==="go"){ b.classList.add("go"); b.textContent="✓ Verifică"; b.onclick=check; }
+    else { b.textContent=k; b.onclick=()=>press(k); }
+    pad.appendChild(b);
+  });
+
+  function selectGroup(sel, attr, cb){
+    document.querySelectorAll(sel+" .opt").forEach(b=>b.onclick=()=>{
+      document.querySelectorAll(sel+" .opt").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel"); cb(b.dataset[attr]); sTap();
+    });
+  }
+  selectGroup("#ops","op",v=>st.op=v);
+  selectGroup("#levels","lv",v=>st.lv=+v);
+  selectGroup("#times","t",v=>st.time=+v);
+
+  // salut în funcție de ora din zi
+  (function greet(){
+    const h=new Date().getHours();
+    const hi = h<11 ? `Bună dimineața, ${NAME}! ☀️` : h<18 ? `Salut, ${NAME}! 👋` : `Bună seara, ${NAME}! 🌙`;
+    const subs=["Hai să ne jucăm cu numerele!","Azi devenim și mai buni la socoteli!","Bufnița te așteaptă cu exerciții noi!","Gata de o rundă de mate?"];
+    $("#hi").textContent=hi; $("#hisub").textContent=pick(subs);
+  })();
+
+  function markSel(){
+    document.querySelectorAll("#levels .opt").forEach(b=>b.classList.toggle("sel",+b.dataset.lv===st.lv));
+  }
+
+  $("#startBtn").onclick=()=>startGame(makeRound(st.op,st.lv));
+  $("#againBtn").onclick=()=>startGame(makeRound(st.op,st.lv));
+  $("#practiceBtn").onclick=()=>{
+    const base=game.uniqHard.map(p=>({...p}));
+    const list=[]; while(list.length<Math.min(ROUND, Math.max(base.length*2,5))) list.push(...base.map(p=>({...p})));
+    startGame(list.slice(0, Math.min(ROUND, Math.max(base.length*2,5))).sort(()=>Math.random()-.5), true);
+  };
+  $("#nextLvBtn").onclick=()=>{ st.lv=Math.min(4,st.lv+1); markSel(); startGame(makeRound(st.op,st.lv)); };
+  $("#menuBtn").onclick=()=>show("#sStart");
+  $("#homeBtn").onclick=()=>{ stopTimer(); if(game) game.over=true; game=null; show("#sStart"); };
+  $("#hintBtn").onclick=showHint;
+  $("#skipBtn").onclick=skip;
+  document.querySelectorAll("#soundBtn,.sndb").forEach(b=>b.onclick=()=>{ st.sound=!st.sound; document.querySelectorAll("#soundBtn,.sndb").forEach(x=>x.textContent=st.sound?"🔊":"🔇"); });
+
+  document.addEventListener("keydown",e=>{
+    if(!$("#sGame").classList.contains("active")) return;
+    if(/^[0-9]$/.test(e.key)) press(e.key);
+    else if(e.key==="Backspace") del();
+    else if(e.key==="Enter") check();
+  });
+})();
+</script>
+</body>
+</html>
